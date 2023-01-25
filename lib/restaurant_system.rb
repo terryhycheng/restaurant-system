@@ -45,4 +45,8 @@ class RestaurantSystem
     puts messager.send(cart.list, time, phone_num)
     cart.clear()
   end
+
+  def add_dish_to_menu(dish, menu = @menu)
+    menu.add(dish)
+  end
 end

@@ -18,15 +18,15 @@ class Messager
     message_content = "Thank you! Your order was placed and will be delivered before #{delivery_time.hour}:#{delivery_time.min}"
 
     # Sending message via Twilio service
-    @client = Twilio::REST::Client.new(@account_sid, @auth_token)
-    message = @client.messages.create(
-      body: message_content,
-      messaging_service_sid: ENV["TWILIO_MESSAGING_SERVICE_SID"],
-      to: phone_num
-    )
-    return message.body
+    # @client = Twilio::REST::Client.new(@account_sid, @auth_token)
+    # message = @client.messages.create(
+    #   body: message_content,
+    #   messaging_service_sid: ENV["TWILIO_MESSAGING_SERVICE_SID"],
+    #   to: phone_num
+    # )
+    # return message.body
 
     # This line below is only for testing
-    # return message_content
+    return message_content
   end
 end

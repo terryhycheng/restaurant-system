@@ -89,4 +89,20 @@ describe RestaurantSystem do
 
     expect($stdout.gets).to eq("Thank you! Your order was placed and will be delivered before 18:15\n")
   end
+
+  it "adds dish to menu" do
+    dish = double :fake_dish, name: "Curry chicken with rice", price: 15
+    menu = double :fake_menu
+    expect(menu).to receive(:add).with(dish)
+    expect(menu).to receive(:list).twice.and_return([dish])
+    restaurant_system = RestaurantSystem.new
+    restaurant_system.add_dish_to_menu(dish, menu)
+
+    restaurant_system.show_menu(menu)
+    $stdout.rewind
+
+    expect($stdout.gets).to eq("Menu\n")
+    expect($stdout.gets).to eq("------------\n")
+    expect($stdout.gets).to eq("- Curry chicken with rice: $15\n")
+  end
 end

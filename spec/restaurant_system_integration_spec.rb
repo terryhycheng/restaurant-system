@@ -13,14 +13,25 @@ describe "Restaurant System Integration Test" do
     Dotenv.load
   end
 
+  it "adds dish to menu" do
+    dish = Dish.new("Curry chicken with rice", 15)
+    @restaurant_system.add_dish_to_menu(dish)
+
+    @restaurant_system.show_menu()
+    $stdout.rewind
+
+    expect($stdout.gets).to eq("Menu\n")
+    expect($stdout.gets).to eq("------------\n")
+    expect($stdout.gets).to eq("- Curry chicken with rice: $15\n")
+  end
+
   it "displays the menu of the restaurant" do
     dish1 = Dish.new("Curry chicken with rice", 15)
     dish2 = Dish.new("Fish and Chips",18)
-    menu = DishList.new
-    menu.add(dish1)
-    menu.add(dish2)
+    @restaurant_system.add_dish_to_menu(dish1)
+    @restaurant_system.add_dish_to_menu(dish2)
 
-    @restaurant_system.show_menu(menu)
+    @restaurant_system.show_menu()
     $stdout.rewind
     
     expect($stdout.gets).to eq("Menu\n")
@@ -40,12 +51,11 @@ describe "Restaurant System Integration Test" do
 
   it "prints out the cart with a grand total" do
     dish = Dish.new("Curry chicken with rice", 15)
-    menu = DishList.new
-    menu.add(dish)
-    restaurant_system = RestaurantSystem.new
-    restaurant_system.add_to_cart(dish.id, menu)
     
-    restaurant_system.show_cart()
+    @restaurant_system.add_dish_to_menu(dish)
+    @restaurant_system.add_to_cart(dish.id)
+    
+    @restaurant_system.show_cart()
     $stdout.rewind
 
     expect($stdout.gets).to eq("Cart\n")
@@ -56,9 +66,7 @@ describe "Restaurant System Integration Test" do
   end
 
   it "prints out a correct message when the cart is empty" do
-    restaurant_system = RestaurantSystem.new
-    
-    restaurant_system.show_cart()
+    @restaurant_system.show_cart()
     $stdout.rewind
 
     expect($stdout.gets).to eq("Cart\n")
@@ -68,13 +76,12 @@ describe "Restaurant System Integration Test" do
 
   it "returns a message body when the message is successfully sent" do
     dish = Dish.new("Curry chicken with rice", 15)
-    menu = DishList.new
     fake_time = Time.new(2023, 1, 25, 18, 05, 0)
 
-    restaurant_system = RestaurantSystem.new
-    restaurant_system.add_to_cart(dish.id, menu)
+    @restaurant_system.add_dish_to_menu(dish)
+    @restaurant_system.add_to_cart(dish.id)
 
-    restaurant_system.confirm_order(ENV["TEST_PHONE_NUM"], fake_time)
+    @restaurant_system.confirm_order(ENV["TEST_PHONE_NUM"], fake_time)
     $stdout.rewind
 
     expect($stdout.gets).to eq("Thank you! Your order was placed and will be delivered before 18:15\n")
