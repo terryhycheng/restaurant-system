@@ -39,7 +39,7 @@ This is a solo project to test my golden square skills overall, including TTD by
 
 The diagram shows the entire structure of this system.
 
-![system_diagram](assets/sys_diagram_rev2.png)
+![system_diagram](assets/sys_diagram_rev3.png)
 
 ## Class Interface Design
 
@@ -72,6 +72,11 @@ class RestaurantSystem
 
   def confirm_order(phone_num, time, cart, messager) # string, DateTime, instances of Cart & Messager
     # confirms an order by sending a message to customer
+    # => void
+  end
+
+  def add_dish_to_menu(dish) # dish is an instance of Dish
+    # adds a dish to menu
     # => void
   end
 end
