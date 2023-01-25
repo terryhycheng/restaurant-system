@@ -15,19 +15,10 @@ This is a solo project to test my golden square skills overall, including TTD by
     - [Class: Messager](#class-messager)
     - [Class: Formatter](#class-formatter)
     - [Class: Dish](#class-dish)
-  - [Tests](#tests)
-    - [Integration Test Design](#integration-test-design)
-    - [Unit Test Design](#unit-test-design)
-      - [Test: Restaurant System](#test-restaurant-system)
-      - [Test: Dish List](#test-dish-list)
-      - [Test: Cart](#test-cart)
-      - [Test: Messager](#test-messager)
-      - [Test: Formatter](#test-formatter)
-      - [Test: Dish](#test-dish)
   - [Getting Started](#getting-started)
     - [1. Set up `Twilio` API Key in `.env`](#1-set-up-twilio-api-key-in-env)
     - [2. Install Dependencies](#2-install-dependencies)
-    - [3. Start to Run](#3-start-to-run)
+    - [3. Run tests](#3-run-tests)
   - [Dependencies](#dependencies)
 
 ## User Stories
@@ -48,7 +39,7 @@ This is a solo project to test my golden square skills overall, including TTD by
 
 The diagram shows the entire structure of this system.
 
-![system_diagram](assets/sys_diagram_rev.png)
+![system_diagram](assets/sys_diagram_rev2.png)
 
 ## Class Interface Design
 
@@ -69,7 +60,7 @@ class RestaurantSystem
     # => void
   end
 
-  def add_to_cart(menu, cart, id) # instances of DishList & Cart, id is a string
+  def add_to_cart(id, menu, cart) # instances of DishList & Cart, id is a string
     # selects a dish and adds it to the cart
     # => void
   end
@@ -79,7 +70,7 @@ class RestaurantSystem
     # => void
   end
 
-  def confirm_order(cart, messager) # instances of Cart & Messager
+  def confirm_order(phone_num, time, cart, messager) # string, DateTime, instances of Cart & Messager
     # confirms an order by sending a message to customer
     # => void
   end
@@ -168,7 +159,7 @@ class Messager
     # ...
   end
 
-  def send(list, time = Time.now, phone_num = ENV["TEST_PHONE_NUM"]) # list is an array
+  def send(list, time, phone_num) # array of Dish, datetime, string
     # sends a message to a mobile phone number
     # => returns a string of message body
   end
@@ -236,256 +227,6 @@ end
 
 ```
 
-## Tests
-
-You can run all the tests by running `rspec` in this folder.
-
-### Integration Test Design
-
-```ruby
-# file: spec/restaurant_system_integration_spec.rb
-
-# 1
-dish = Dish.new("Curry chicken with rice", 15)
-menu = DishList.new
-formatter = Formatter.new
-menu.add(dish)
-restaurant_system = RestaurantSystem.new
-restaurant_system.show_menu(menu, formatter)
-# => Menu
-#    ------------
-#    - Curry chicken with rice: $15
-
-# 2
-menu = DishList.new
-formatter = Formatter.new
-restaurant_system = RestaurantSystem.new
-restaurant_system.show_menu(menu, formatter) # => 'This list is empty.'
-
-# 3
-dish = Dish.new("Curry chicken with rice", 15)
-menu = DishList.new
-cart = Cart.new
-formatter = Formatter.new
-restaurant_system = RestaurantSystem.new
-restaurant_system.add_to_cart(menu, cart, dish.id)
-restaurant_system.show_cart(cart, formatter)
-# => Cart
-#    ------------
-#    - Curry chicken with rice: $15
-#    ------------
-#    Grand total : $15
-
-# 4
-dish = Dish.new("Curry chicken with rice", 15)
-cart = Cart.new
-messager = Messager.new
-restaurant_system = RestaurantSystem.new
-restaurant_system.confirm_order(cart, messager, "+447775599444") # => 'Your order is confirmed. Thank you for your order'
-
-```
-
-### Unit Test Design
-
-#### Test: Restaurant System
-
-```ruby
-# file: spec/restaurant_system_spec.rb
-
-# 1
-dish = double :fake_dish, name: "Curry chicken with rice", price: 15
-menu = double :fake_menu
-formatter = double :fake_formatter
-expect(menu).to receive(:list).and_return([dish]).ordered
-expect(formatter).to receive(:format).with([dish]).and_return("- Curry chicken with rice: $15").ordered
-restaurant_system = RestaurantSystem.new
-restaurant_system.show_menu(menu, formatter)
-# => Menu
-#    ------------
-#    - Curry chicken with rice: $15
-
-# 2
-menu = double :fake_menu
-formatter = double :fake_formatter
-expect(menu).to receive(:list).and_return([]).ordered
-expect(formatter).to receive(:format).with([]).and_return("The list is empty.").ordered
-restaurant_system = RestaurantSystem.new
-restaurant_system.show_menu(menu, formatter) # => 'This list is empty.'
-
-# 3
-dish = double :fake_dish, id: "fake-id", name: "Curry chicken with rice", price: 15
-menu = double :fake_menu
-cart = double :fake_cart
-formatter = double :fake_formatter
-expect(menu).to receive(:select).with("fake-id").and_return(dish).ordered
-expect(cart).to receive(:add).with(dish).ordered
-expect(cart).to receive(:list).and_return([dish]).ordered
-expect(formatter).to receive(:format).with([dish]).and_return("- Curry chicken with rice: $15").ordered
-expect(cart).to receive(:price_total).and_return(15).ordered
-restaurant_system = RestaurantSystem.new
-restaurant_system.add_to_cart(menu, cart, "fake-id")
-restaurant_system.show_cart(cart, formatter)
-# => Cart
-#    ------------
-#    - Curry chicken with rice: $15
-#    ------------
-#    Grand total : $15
-
-# 4
-dish = double :fake_dish
-cart = double :fake_cart
-messager = double :fake_messager
-expect(cart).to receive(:list).and_return([dish])
-expect(messager).to receive(:send).with("+447775599444").and_return("accepted")
-expect(cart).to receive(:clear)
-restaurant_system = RestaurantSystem.new
-restaurant_system.confirm_order(cart, messager, "+447775599444") # => 'Your order is confirmed. Thank you for your order'
-```
-
-#### Test: Dish List
-
-```ruby
-# file: spec/dish_list_spec.rb
-
-# 1
-dish = double :fake_dish
-dish_list = DishList.new
-dish_list.add(dish)
-dish_list.list() # => [<Dish #0001>]
-
-# 2
-dish_list = DishList.new
-dish_list.list() # => []
-
-# 3
-dish = double :fake_dish, id: "fake-id"
-dish_list = DishList.new
-dish_list.add(dish)
-dish_list.delete("fake-id")
-dish_list.list() # => []
-
-# 4
-dish = double :fake_dish, id: "fake-id"
-dish_list = DishList.new
-dish_list.add(dish)
-dish_list.delete("wrong-id") # => throw an error with message "Invalid id. Please enter again."
-
-# 5
-dish = double :fake_dish, id: "fake-id"
-dish_list = DishList.new
-dish_list.add(dish)
-dish_list.select("fake-id") # => <Dish #0001>
-
-```
-
-#### Test: Cart
-
-```ruby
-# file: spec/cart_spec.rb
-
-# 1
-dish = double :fake_dish
-cart = Cart.new
-cart.add(dish)
-cart.list() # => [<Dish #0001>]
-
-# 2
-cart = Cart.new
-cart.list() # => []
-
-# 3
-dish = double :fake_dish, price: 15
-cart = Cart.new
-cart.add(dish)
-cart.add(dish)
-cart.price_total() # => 30
-
-# 4
-dish = double :fake_dish, id: "fake-id"
-cart = Cart.new
-cart.add(dish)
-cart.remove_dish("fake-id")
-cart.list # => []
-
-# 5
-dish = double :fake_dish, id: "fake-id"
-cart = Cart.new
-cart.add(dish)
-cart.remove_dish("wrong-id") # => throw an error with message "Invalid id. Please enter again."
-
-# 6
-dish = double :fake_dish
-cart = Cart.new
-cart.add(dish)
-cart.add(dish)
-cart.clear
-cart.list() # => []
-
-```
-
-#### Test: Messager
-
-```ruby
-# file: spec/messager_spec.rb
-
-# 1
-dish = double :fake_dish
-cart = double :fake_cart
-fake_time = Time.new(2023, 1, 25, 18, 20 ,0)
-expect(cart).to receive(:list).and_return([dish, dish])
-messager = Messager.new
-messager.send(cart.list, fake_time) # => "Thank you! Your order was placed and will be delivered before 18:40"
-
-```
-
-#### Test: Formatter
-
-```ruby
-# file: spec/formatter_spec.rb
-
-# 1
-dish = double :fake_dish, name: "Curry chicken with rice", price: 15
-formatter = Formatter.new
-formatter.format(dish) # => - Curry chicken with rice: $15
-
-
-```
-
-#### Test: Dish
-
-```ruby
-# file: spec/dish_spec.rb
-
-# 1
-dish = Dish.new("Curry chicken with rice", 15)
-dish.id() #=> "2d931510-d99f-494a-8c67-87feb05e1594"
-
-# 2
-dish = Dish.new("Curry chicken with rice", 15)
-dish.name() #=> "Curry chicken with rice"
-
-# 3
-dish = Dish.new("Curry chicken with rice", 15)
-dish.price() #=> 15
-
-# 4
-dish = Dish.new("Curry chicken with rice", 15)
-dish.available?() #=> true
-
-# 5
-dish = Dish.new("Curry chicken with rice", 15)
-dish.off_list
-dish.available?() #=> false
-
-# 6
-dish = Dish.new("Curry chicken with rice", 15)
-dish.off_list
-dish.on_list
-dish.available?() #=> true
-
-
-```
-
 ## Getting Started
 
 ### 1. Set up `Twilio` API Key in `.env`
@@ -503,12 +244,13 @@ TEST_PHONE_NUM="your_phone_num"
 
 By running `bundle`, all dependencies you need for this project will be installed locally.
 
-### 3. Start to Run
+### 3. Run tests
 
-You can start the project by running `ruby lib/restaurant_system.rb`
+You can start tests by running `rspec`
 
 ## Dependencies
 
 - Ruby 3.0.0 ([website](https://www.ruby-lang.org/en/))
 - RSpec 3.12 ([website](https://rspec.info/))
 - twilio-ruby 5.74.1 ([Github](https://github.com/twilio/twilio-ruby))
+- dotenv 2.8 ([Github](https://github.com/bkeepers/dotenv))

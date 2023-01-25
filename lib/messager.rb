@@ -25,5 +25,8 @@ class Messager
       to: phone_num
     )
     return message.body
+
+    # This line below is only for testing
+    # return message_content
   end
 end

@@ -15,7 +15,7 @@ class RestaurantSystem
     puts "Menu"
     puts "------------"
     if menu.list.empty?
-      puts "This list is empty."
+      puts "The menu is empty."
     else
       menu.list.each do |dish|
         puts formatter.format(dish)
@@ -23,18 +23,26 @@ class RestaurantSystem
     end
   end
 
-  def add_to_cart(menu = @menu, cart = @cart, id) # instances of DishList & Cart, id is a string
-    # selects a dish and adds it to the cart
-    # => void
+  def add_to_cart(id, menu = @menu, cart = @cart)
+    cart.add(menu.select(id))
   end
 
-  def show_cart(cart = @cart, formatter = @formatter) # instances of Cart & Formatter
-    # prints out all items in the cart
-    # => void
+  def show_cart(cart = @cart, formatter = @formatter)
+    puts "Cart"
+    puts "------------"
+    if cart.list.empty?
+      puts "The cart is empty."
+    else
+      cart.list.each do |dish|
+        puts formatter.format(dish)
+      end
+      puts "------------"
+      puts "Grand total : $#{cart.price_total}"
+    end
   end
 
-  def confirm_order(cart = @cart, messager = @messager) # instances of Cart & Messager
-    # confirms an order by sending a message to customer
-    # => void
+  def confirm_order(phone_num, time = Time.now, cart = @cart, messager = @messager)
+    puts messager.send(cart.list, time, phone_num)
+    cart.clear()
   end
 end

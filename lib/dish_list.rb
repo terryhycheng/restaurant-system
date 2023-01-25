@@ -7,15 +7,15 @@ class DishList
     return @list
   end
 
-  def add(dish) # dish is an instance of Dish
+  def add(dish)
     @list << dish
   end
 
-  def delete(id) # id is a string
+  def delete(id)
     @list.delete_if { |dish| dish.id == id }
   end
 
-  def select(id) # id is a string
+  def select(id)
     result = @list.select { |dish| dish.id == id }
     return result[0] || []
   end
